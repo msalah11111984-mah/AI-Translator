@@ -13,10 +13,9 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Build Android APK with Buildozer Action
-      uses: digidemic/buildozer-action@v2
+    - name: Build Android APK with Buildozer Official Action
+      uses: ArtemGovorov/buildozer-action@v1
       with:
-        buildozer_version: 'stable'
         command: buildozer -v android debug
 
     - name: Upload APK Artifact
