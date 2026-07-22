@@ -13,30 +13,29 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install Buildozer and Java Dependencies
+    - name: Install Buildozer and Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgmp-dev xclip xsel libgtk-3-dev lld
         pip install --upgrade pip
         pip install buildozer cython kivy
 
-    - name: Install Android SDK and Pre-Accept Licenses
+    - name: Auto Accept SDK Licenses via Android Home
       run: |
-        # إنشاء المجلدات الرسمية لأدوات أندرويد
-        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
-        cd $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
+        # إنشاء مجلدات التهيئة المسبقة لرخص أندرويد
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
         
-        # تحميل حزمة أدوات أندرويد الرسمية لعام 2026 مباشرة من سيرفرات جوجل
-        wget https://google.com -O cmdline-tools.zip
-        unzip cmdline-tools.zip && rm cmdline-tools.zip
-        mv cmdline-tools latest
-        
-        # قبول كافة رخص أندرويد تلقائياً بشكل إجباري وقاطع
-        yes | ./latest/bin/sdkmanager --licenses --sdk_root=$HOME/.buildozer/android/platform/android-sdk
+        # استخدام الأداة المثبتة مسبقاً في نظام السيرفر للموافقة الفورية على رخص جوجل
+        if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        elif [ -f "$ANDROID_HOME/tools/bin/sdkmanager" ]; then
+          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
+        fi
 
     - name: Build Android APK
       run: |
-        buildozer -v android debug
+        # بدء بناء التطبيق بالاعتماد على الرخص المقبولة مسبقاً
+        yes | buildozer -v android debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
