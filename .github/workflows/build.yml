@@ -13,10 +13,32 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Build Android APK with Auto Licenses
-      uses: action-pack/buildozer-action@v2
-      with:
-        command: buildozer -v android debug
+    - name: Install Buildozer Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgmp-dev xclip xsel libgtk-3-dev lld
+        pip install --upgrade pip
+        pip install buildozer cython kivy
+
+    - name: Pre-accept Android SDK Licenses
+      run: |
+        # إنشاء ملفات التهيئة وقبول كافة رخص أندرويد بشكل إجباري قبل البناء
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin || true
+        
+        # أمر ذكي لتهيئة الأدوات وقبول رخص جوجل تلقائياً
+        yes | buildozer android pgo_build || true
+        
+        # البحث عن أداة الرخص في النظام وإجبارها على الموافقة التلقائية
+        SDK_MANAGER=$(find $HOME/.buildozer/ -name sdkmanager | head -n 1)
+        if [ ! -z "$SDK_MANAGER" ]; then
+          yes | $SDK_MANAGER --licenses || true
+        fi
+
+    - name: Build Android APK
+      run: |
+        # التجميع النهائي بدون توقف
+        yes | buildozer -v android debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
