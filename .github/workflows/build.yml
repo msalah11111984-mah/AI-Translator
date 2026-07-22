@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # استخدام نسخة نظام مستقرة ومدعومة بالكامل لأدوات الأندرويد
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -20,21 +20,9 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython kivy
 
-    - name: Auto Accept SDK Licenses via Android Home
-      run: |
-        # إنشاء مجلدات التهيئة المسبقة لرخص أندرويد
-        mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        
-        # استخدام الأداة المثبتة مسبقاً في نظام السيرفر للموافقة الفورية على رخص جوجل
-        if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-        elif [ -f "$ANDROID_HOME/tools/bin/sdkmanager" ]; then
-          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
-        fi
-
     - name: Build Android APK
       run: |
-        # بدء بناء التطبيق بالاعتماد على الرخص المقبولة مسبقاً
+        # أمر تجميع مباشر ومستقر يتوافق تماماً مع رخص الإصدار 33
         yes | buildozer -v android debug
 
     - name: Upload APK Artifact
