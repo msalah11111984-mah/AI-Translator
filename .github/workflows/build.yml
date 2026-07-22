@@ -13,24 +13,10 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install Buildozer Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgmp-dev xclip xsel libgtk-3-dev lld
-        pip install --upgrade pip
-        pip install buildozer cython kivy
-
-    - name: Accept Android SDK Licenses
-      run: |
-        mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        yes | buildozer android pgo_build || true
-        if [ -d "$HOME/.buildozer/android/platform/android-sdk" ]; then
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        fi
-
-    - name: Build Android APK
-      run: |
-        buildozer -v android debug
+    - name: Build Android APK with Auto Licenses
+      uses: action-pack/buildozer-action@v2
+      with:
+        command: buildozer -v android debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
